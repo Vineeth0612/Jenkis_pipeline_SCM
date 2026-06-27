@@ -1,26 +1,27 @@
 pipeline {
-    agent any 
+    agent any
 
     stages {
-        stage ('build') {
-            steps () { 
-              echo "welcome to build stage"
-              sh "mkdir SCm"
+        stage('Build') {
+            steps {
+                // Get some code from a GitHub repository
+                git 'https://github.com/jglick/simple-maven-project-with-tests.git'
+
+                // Run the build on a Unix agent. You must have Maven installed.
+                sh 'mvn -Dmaven.test.failure.ignore=true clean package'
+
+                // To run Maven on a Windows agent, use
+                // bat 'mvn -Dmaven.test.failure.ignore=true clean package'
+            }
+
+            post {
+                // If Maven was able to run the tests, even if some of the test
+                // failed, record the test results and archive the jar file.
+                success {
+                    junit '**/target/surefire-reports/TEST-*.xml'
+                    archiveArtifacts 'target/*.jar'
+                }
             }
         }
-    
-        stage ("test") {
-            steps () {
-                echo "welcome to test stage"          
-            }    
-        }
-
-            
-        stage ("Deploy") {
-            steps () {
-                echo "welcome to Deploy stage"          
-             }    
-        }
-    }   
-}    
-
+    }
+}
